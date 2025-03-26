@@ -1,0 +1,14 @@
+{
+	"dependencies": {
+		"@types/express": "^5.0.1",
+		"@types/express-ws": "^3.0.5",
+		"@types/node": "^22.13.13",
+		"@types/ws": "^8.18.0",
+		"chokidar": "^4.0.3",
+		"express": "^4.21.2",
+		"express-ws": "^5.0.2",
+		"luamin": "^1.0.4",
+		"typescript": "^5.8.2",
+		"ws": "^8.18.1"
+	}
+}
