@@ -38,7 +38,7 @@ function sendFileData(filePath: string, channel: string, file: string) {
   const data = luamin.minify(fs.readFileSync(resolved, "utf8").trim()) as string;
   const sending = {
     event: "change",
-    filePath: filePath.replace(file, ""),
+    filePath: filePath.startsWith(file) ? filePath : `${file}/${filePath}`,
     data: data
   }
   const clients = channelClients[channel];
@@ -49,7 +49,7 @@ function sendFileData(filePath: string, channel: string, file: string) {
 function fileRemoval(filePath: string, channel: string, file: string) {
   const sending = {
     event: "remove",
-    filePath: filePath.replace(file, "")
+    filePath: filePath.startsWith(file) ? filePath : `${file}/${filePath}`
   }
   const clients = channelClients[channel];
   for (const client of clients)
@@ -72,7 +72,7 @@ for (const channel in channels) {
         const data = fs.readFileSync(resolved, "utf8").trim();
         const sending: sendingData = {
           event: "change",
-          filePath: `/${f}`,
+          filePath: `${f}`,
           data: luamin.minify(data) as string
         }
         return [sending];
@@ -98,7 +98,7 @@ for (const channel in channels) {
           const data = fs.readFileSync(resolved, "utf8").trim();
           const sending: sendingData = {
             event: "change",
-            filePath: `/${f}`,
+            filePath: `${file}/${f}`,
             data: luamin.minify(data) as string
           }
           ret.push(sending);

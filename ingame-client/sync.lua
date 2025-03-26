@@ -32,9 +32,9 @@ print("Connecting to websocket")
 local ws = http.websocket("ws://" .. address)
 
 local function ensureFile(path, data)
+  print(path)
   local dir = splitString(path, "/")
   local currentDir = dir[1]
-  print(#dir)
   if not fs.exists(currentDir) then
     if #dir == 1 then
       local f = fs.open(currentDir, "w")
@@ -44,15 +44,16 @@ local function ensureFile(path, data)
       fs.makeDir(currentDir)
     end
   end
-  for i = 2, #currentDir - 1 do
-    currentDir = currentDir .. "/" .. dir[i]
-    if not fs.exists(currentDir) then 
-      fs.makeDir(currentDir)
-    end
+  if #dir == 1 then return end
+  if #dir > 2 then
+	  for i = 2, #currentDir - 1 do
+		currentDir = currentDir .. "/" .. dir[i]
+		if not fs.exists(currentDir) then 
+		  fs.makeDir(currentDir)
+		end
+	  end
   end
   currentDir = currentDir .. "/" .. dir[#dir]
-  print(currentDir)
-  print(dir[#dir])
   local file = fs.open(currentDir, "w")
   file.write(data)
   file.close()
@@ -83,7 +84,6 @@ while true do
   print("attempting to receive")
   local wsrecv = ws.receive()
   if wsrecv then
-    print(wsrecv);
     local recv = textutils.unserialiseJSON(wsrecv)
     if recv.event == "change" then 
       local fp = recv.filePath
