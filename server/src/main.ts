@@ -34,7 +34,7 @@ type sendingData = {
 
 function sendFileData(filePath: string, channel: string, file: string) {
   const f = filePath.startsWith("/") ? filePath.slice(1) : filePath;
-  const resolved = path.resolve(cwd, "src", f);
+  const resolved = path.resolve(cwd, "build", f);
   const data = luamin.minify(fs.readFileSync(resolved, "utf8").trim()) as string;
   const sending = {
     event: "change",
@@ -63,12 +63,12 @@ for (const channel in channels) {
   channelInitialConnects[channel] = [];
   const ch = channels[channel];
   for (const file of ch) {
-    const resolved = path.resolve(cwd, "src", file.startsWith("/") ? file.slice(1) : file);
+    const resolved = path.resolve(cwd, "build", file.startsWith("/") ? file.slice(1) : file);
     const stat = fs.statSync(resolved);
     if (stat.isFile()) {
       channelInitialConnects[channel].push(() => {
         const f = file.startsWith("/") ? file.slice(1) : file;
-        const resolved = path.resolve(cwd, "src", f);
+        const resolved = path.resolve(cwd, "build", f);
         const data = fs.readFileSync(resolved, "utf8").trim();
         const sending: sendingData = {
           event: "change",
@@ -78,23 +78,23 @@ for (const channel in channels) {
         return [sending];
       })
       chokidar.watch(resolved).on("change", (pth) => {
-        const toRemove = path.resolve(cwd, "src", file);
+        const toRemove = path.resolve(cwd, "build", file);
         const removed = pth.replace(toRemove, "");
         sendFileData(removed, channel, file);
       }).on("unlink", (pth) => {
-        const toRemove = path.resolve(cwd, "src", file);
+        const toRemove = path.resolve(cwd, "build", file);
         const removed = pth.replace(toRemove, "");
         fileRemoval(removed, channel, file);
       })
     }
     else if (stat.isDirectory()) {
       channelInitialConnects[channel].push(() =>  {
-        const toRemove = path.resolve(cwd, "src");
+        const toRemove = path.resolve(cwd, "build");
         const children = fs.readdirSync(resolved, { recursive: true, encoding: "utf8" }).filter((v) => fs.statSync(path.resolve(toRemove, file.startsWith("/") ? file.slice(1) : file, v)).isFile()).map((v) => v.replace(toRemove, ""));
         const ret: sendingData[] = []
         for (const child of children) {
           const f = child.startsWith("/") ? child.slice(1) : child;
-          const resolved = path.resolve(cwd, "src", file.startsWith("/") ? file.slice(1) : file, f);
+          const resolved = path.resolve(cwd, "build", file.startsWith("/") ? file.slice(1) : file, f);
           const data = fs.readFileSync(resolved, "utf8").trim();
           const sending: sendingData = {
             event: "change",
@@ -106,15 +106,15 @@ for (const channel in channels) {
         return ret;
       })
       chokidar.watch(resolved).on("add", (pth) => {
-        const toRemove = path.resolve(cwd, "src");
+        const toRemove = path.resolve(cwd, "build");
         const removed = pth.replace(toRemove, "");
         sendFileData(removed, channel, file);
       }).on("change", (pth) => {
-        const toRemove = path.resolve(cwd, "src");
+        const toRemove = path.resolve(cwd, "build");
         const removed = pth.replace(toRemove, "");
         sendFileData(removed, channel, file);
       }).on("unlink", (pth) => {
-        const toRemove = path.resolve(cwd, "src");
+        const toRemove = path.resolve(cwd, "build");
         const removed = pth.replace(toRemove, "");
         fileRemoval(removed, channel, file);
       })
