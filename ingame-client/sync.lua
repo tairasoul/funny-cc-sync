@@ -1,16 +1,9 @@
 local addr, channel = ...
 local address = addr .. "/channels"
+local split = require("cc.strings").split
 
 if channel then
   address = address .. "/" .. channel
-end
-
-local function splitString(input, delimiter)
-  local result = {}
-  for part in string.gmatch(input, "([^" .. delimiter .. "]+)") do
-      table.insert(result, part)
-  end
-  return result
 end
 
 if not channel then
@@ -32,7 +25,7 @@ print("Connecting to websocket")
 local ws = http.websocket("ws://" .. address)
 
 local function ensureFile(path, data)
-  local dir = splitString(path, "/")
+  local dir = split(path, "/")
   local currentDir = dir[1]
   if not fs.exists(currentDir) then
     if #dir == 1 then

@@ -51,11 +51,21 @@ function bundleChannel(channel: string) {
   return bundler.bundle(mainFile, {
     resolveModule: (name) => {
       for (const file of mappedFiles) {
-        if (file.replace(".lua", "").endsWith(name.replace(".", "/")))
+        if (file.replace(".lua", "").endsWith(name.replace(/\./g, "/")))
           return file
       }
       return null;
-    }
+    },
+    ignoredModuleNames: [
+      "cc.audio.dfpwm",
+      "cc.completion",
+      "cc.expect",
+      "cc.image.nft",
+      "cc.pretty",
+      "cc.require",
+      "cc.shell.completion",
+      "cc.strings"
+    ]
   })
 }
 
