@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import chokidar from "chokidar"
 import WebSocket from "ws";
+import ngrok from "ngrok";
 import * as lua from "luamin";
 import bundler from "luabundle";
 import { fileURLToPath } from "url";
@@ -93,6 +94,13 @@ setInterval(() => {
     }
   }
 }, 200);
+
+const grok = await ngrok.connect({
+  addr: 10234,
+  proto: "tcp"
+})
+
+console.log(`our ngrok url: ${grok}`);
 
 const app = express() as Express.Application as expressWs.Application;
 const exWs = expressWs(app);
