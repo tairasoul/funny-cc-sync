@@ -53,7 +53,7 @@ function bundleChannel(channel: string) {
         if (file.replace(".lua", "").endsWith(name.replace(".", "/")))
           return file
       }
-      return "";
+      return null;
     }
   })
 }
