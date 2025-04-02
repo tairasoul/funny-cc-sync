@@ -12,7 +12,7 @@ if not channel then
   print(request);
   print(request.getResponseCode())
   local data = request.readAll()
-  local channels = splitString(data, ",")
+  local channels = split(data, ",")
   local str = "Available channels:"
   for _,v in next, channels do
     str = str .. " " .. v
