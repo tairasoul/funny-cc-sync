@@ -71,7 +71,7 @@ function bundleChannel(channel: string) {
 function sendFileData(channel: string) {
   console.log(`change detected for channel ${channel}`)
   channelsRequiringChange[channel] = false;
-  const bundled = luamin.minify(bundleChannel(channel));
+  const bundled = bundleChannel(channel);
   const sending = {
     event: "change",
     filePath: `${channel}.lua`,
@@ -89,8 +89,11 @@ for (const channel in channels) {
   for (const file of ch) {
     const resolved = path.resolve(cwd, "build", file.startsWith("/") ? file.slice(1) : file);
     chokidar.watch(resolved).on("add", (pth) => {
+      console.log(pth);
       channelsRequiringChange[channel] = true;
     }).on("change", (pth) => {
+      channelsRequiringChange[channel] = true;
+    }).on("unlink", (pth) => {
       channelsRequiringChange[channel] = true;
     })
   }
@@ -121,7 +124,7 @@ for (const channel in channels) {
   app.ws(`/channels/${channel}`, (socket) => {
     console.log(`new connection on channel ${channel}`);
     console.log("setting up bulk data send");
-    const data = luamin.minify(bundleChannel(channel)) as string;
+    const data = bundleChannel(channel) as string;
     setTimeout(() => {
       console.log(`sending bulk data for ${channel}.lua`);
       socket.send(JSON.stringify({

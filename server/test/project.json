@@ -1,0 +1,16 @@
+{
+  "rootDir": "build",
+  "project": [
+    {
+      "type": "library",
+      "directories": ["lib1"],
+      "channelName": "testlib"
+    },
+    {
+      "type": "script",
+      "files": ["script1/main.lua"],
+      "channelName": "testscript",
+      "requiredChannels": ["testlib"]
+    }
+  ]
+}

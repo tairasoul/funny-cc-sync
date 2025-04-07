@@ -72,7 +72,7 @@ function bundleChannel(channel: string) {
 function sendFileData(channel: string) {
   console.log(`change detected for channel ${channel}`)
   channelsRequiringChange[channel] = false;
-  const bundled = luamin.minify(bundleChannel(channel));
+  const bundled = bundleChannel(channel);
   const sending = {
     event: "change",
     filePath: `${channel}.lua`,
@@ -121,7 +121,7 @@ app.get("/channels", (req, res) => {
 
 app.get("/sync.lua", (req, res) => {
   const file = path.resolve(__dirname, "..", "..", "ingame-client", "sync.lua")
-  const minified = luamin.minify(fs.readFileSync(file, "utf8"));
+  const minified = fs.readFileSync(file, "utf8");
   res.send(minified);
 })
 
@@ -129,7 +129,7 @@ for (const channel in channels) {
   app.ws(`/channels/${channel}`, (socket) => {
     console.log(`new connection on channel ${channel}`);
     console.log("setting up bulk data send");
-    const data = luamin.minify(bundleChannel(channel)) as string;
+    const data = bundleChannel(channel) as string;
     setTimeout(() => {
       console.log(`sending bulk data for ${channel}.lua`);
       socket.send(JSON.stringify({
