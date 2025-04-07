@@ -116,7 +116,7 @@ export class SyncServer {
     }
     preprocess(content) {
         let newContent = content;
-        const ast = luaparse.parse(newContent);
+        const ast = luaparse.parse(newContent, { luaVersion: "5.2" });
         const requires = ast.body.filter((v) => v.type === "LocalStatement" && v.init.filter((v) => v.type === "CallExpression").find((v) => v.base.type === "Identifier" && v.base.name === "require"));
         const assembled = [];
         for (const req of requires)
