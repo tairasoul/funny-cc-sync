@@ -43,8 +43,6 @@ You can configure the server by editing server/config.json.
 
 Setting up a client is fairly simple.
 
-To get the msgpack requirement for the lua side, run `wget {host-url}/msgpack.lua`
-
 In order to get the syncing script, run `wget {host-url}/sync.lua`
 
 `{host-url}` should either be a URL logged in the console (adding http://) or your own domain, depending on how you choose to run this.
