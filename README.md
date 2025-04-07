@@ -1,6 +1,6 @@
 # CC:T Syncing Server
 
-A primarily [cc-tstl-template][https://github.com/MCJack123/cc-tstl-template] oriented CC:T sync server.
+A primarily [cc-tstl-template](https://github.com/MCJack123/cc-tstl-template) oriented CC:T sync server.
 
 Made because I didn't want to manually enter everything and the other tools I could find didn't serve the sole purpose of syncing files, instead being either a turtle remote access tool or a turtle emulator.
 
