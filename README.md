@@ -5,7 +5,7 @@ A primarily [cc-tstl-template][https://github.com/MCJack123/cc-tstl-template] or
 Made because I didn't want to manually enter everything and the other tools I could find didn't serve the sole purpose of syncing files, instead being either a turtle remote access tool or a turtle emulator.
 
 project.json structure:
-```json
+```json5
 {
     "rootDir": "dir", // The directory to search for files in. This is relative to where you're running the server, so "." would resolve to the current directory, and "build" would resolve to "currentDirectory/build"
     "project": [     // This is where we declare the various channels available to clients.
@@ -32,7 +32,7 @@ I don't know how to make a sort of "sourcemap" to ensure the client can remove f
 
 You can configure the server by editing server/config.json.
 
-```json
+```json5
 {
     "port": 10234, // The port to host the Express server on. If you are connecting to localhost, the address should be localhost:port
     "minify": false // Should we minify the Lua code sent to the turtle? This is helpful if you wish to save space but will make debugging a pain.
