@@ -49,12 +49,12 @@ local ws = http.websocket("ws://" .. address .. "/subscribe")
 
 local function receive() 
   local recv, isBinary = ws.receive()
-  if not recv then print("websocket likely closed, ending program") return nil end
-  if not isBinary then error("non-binary message received:\n"..recv) return end
+  if not recv then print("websocket likely closed, ending program") return nil, true end
+  if not isBinary then error("non-binary message received:\n"..recv) return nil, true end
   if recv then 
     local ok, data = pcall(msgpack.decode, recv)
     if not ok then return error("error decoding msgpack data:\n", recv) end
-    return data
+    return data, false
   end
 end
 
@@ -107,10 +107,7 @@ end
 
 local function processData(data)
   if data.type == "deletion" then
-    pretty.pretty_print(data)
-    print("deletion")
     for _,v in next, data.files do
-      print(v)
       fs.delete(v)
       walkUpTree(v)
     end
@@ -134,10 +131,12 @@ initialConnect()
 
 while true do
   print("waiting for channel change")
-  local data = receive()
-  if not data then break end
-  for _,v in next, data do
-    processData(v)
+  local data, close = receive()
+  if close then break end
+  if data then
+    for _,v in next, data do
+      processData(v)
+    end
+    print("data received")
   end
-  print("data received")
 end

@@ -1,4 +1,5 @@
 {
   "port": 10234,
-  "minify": false
+  "minify": false,
+  "ngrok": false
 }

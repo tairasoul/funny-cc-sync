@@ -74,21 +74,6 @@ const BuiltinModules = [
   "cc.strings"
 ]
 
-/*  
- * Processing files:
- * Bundle all library files into a single file 
- * Place the resulting library file into the library's directory 
- * Remap requires to said library to the resulting dir & filename 
- * Repeat for all following libraries with the existing remap 
- * Check if the hash has changed for each library
- * If it has changed, re-send that library 
- * Processing scripts:
- * Take the remapped requires from the library bundling
- * Pass them into luabundler
- * Check if hash has changed 
- * Send script if hash changed
- */
-
 export class SyncServer {
   private port: number;
   private project: Project | undefined;
@@ -97,6 +82,7 @@ export class SyncServer {
   private channelHashes: Map<string, number> = new Map();
   private subscribed: Map<WebSocket, string[]> = new Map();
   private files: Map<ProjectItem, string[]> = new Map();
+  private fileBuffered: Map<ProjectItem, string[]> = new Map();
   private luaRoot: string;
   private minify: boolean;
 
@@ -121,6 +107,11 @@ export class SyncServer {
         const decode = Buffer.from(data as unknown as string, "base64");
         const uint = new Uint8Array(decode);
         const decoded = msgpack.decode(uint) as CCRequest;
+        decoded.channels = decoded.channels.filter((v) => this.project.project.find((b) => b.channelName === v));
+        if (decoded.channels.length === 0) {
+          ws.close();
+          return;
+        }
         this.subscribed.set(ws, decoded.channels);
         this.newSubscription(ws);
         ws.once("close", () => this.subscribed.delete(ws));
@@ -128,11 +119,7 @@ export class SyncServer {
     })
     setInterval(() => {
       this.UpdateHashes();
-    }, 100)
-
-    setInterval(() => {
-      this.sendForChanged();
-    }, 20)
+    }, 500)
     this.server.get("/sync.lua", (req, res) => {
       const file = path.join(this.luaRoot, "sync.lua");
       res.send(bundler.bundle(file, {
@@ -222,10 +209,10 @@ export class SyncServer {
         filePath: file
       })
     }
+    const realFiles: string[] = [];
     for (const directory of channel.directories ?? []) {
       const dirpath = path.join(process.cwd(), this.project.rootDir, directory);
       const files = fs.readdirSync(dirpath, { recursive: true, encoding: "utf8" });
-      const realFiles: string[] = [];
       for (const file of files) {
         const filepath = path.join(dirpath, file);
         const stat = fs.statSync(filepath);
@@ -238,14 +225,20 @@ export class SyncServer {
           filePath: path.join(directory, file)
         })
       }
-      const removed = (this.files.get(channel) ?? []).filter((v) => !realFiles.includes(v));
-      this.files.set(channel, realFiles);
+    }
+    this.fileBuffered.set(channel, realFiles);
+    const removed = (this.files.get(channel) ?? []).filter((v) => !realFiles.includes(v));
+    if (removed.length > 0)
       removals.push({
         type: "deletion",
         files: removed
       })
-    }
+
     return {data, removals};
+  }
+
+  private updateFiles() {
+    this.fileBuffered.forEach((v, k) => this.files.set(k, v));
   }
 
   private processLibrary(channel: string) {
@@ -265,7 +258,6 @@ export class SyncServer {
         type: "library"
       }
     )
-    console.log(files.removals);
     if (files.removals.length > 0)
       channelRequests.push(...files.removals);
     return channelRequests;
@@ -309,15 +301,19 @@ export class SyncServer {
   }
 
   private UpdateHashes() {
+    let changed = false;
     for (const channel of this.getChannels()) {
       const requests = this.getRequestsForChannel(channel);
       const channelHash = hash(requests);
       const previousHash = this.channelHashes.get(channel);
       if (channelHash !== previousHash) {
+        changed = true;
         this.channelHashes.set(channel, channelHash);
         this.channelsChanged.push(channel);
       }
     }
+    if (changed)
+      this.sendForChanged();
   }
 
   private sendForChanged() {
@@ -327,11 +323,12 @@ export class SyncServer {
       data.set(channel, requests);
     }
     this.subscribed.forEach((channels, ws) => {
-      if (!this.channelsChanged.find((v) => channels.includes(v))) return;
       for (const channel of channels) {
+        if (!data.has(channel)) continue;
         ws.send(msgpack.encode(data.get(channel)!));
       }
     })
     this.channelsChanged = [];
+    this.updateFiles();
   }
 }

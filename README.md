@@ -28,6 +28,8 @@ If a "GET" request is sent to "/", we respond with all available channels and th
 
 I don't know how to make a sort of "sourcemap" to ensure the client can remove files that are no longer in the project, especially seeing as there's multiple channels to connect to, so auto-removing files is not a feature. If I work on this further, I might try to add that.
 
+This project also sends the entire channel's data every time a file is changed, so it's currently fairly inefficient when it comes to network usage.
+
 ## Config 
 
 You can configure the server by editing server/config.json.
@@ -35,7 +37,8 @@ You can configure the server by editing server/config.json.
 ```json5
 {
     "port": 10234, // The port to host the Express server on. If you are connecting to localhost, the address should be localhost:port
-    "minify": false // Should we minify the Lua code sent to the turtle? This is helpful if you wish to save space but will make debugging a pain.
+    "minify": false, // Should we minify the Lua code sent to the turtle? This is helpful if you wish to save space but will make debugging a pain.
+    "ngrok": false // Should we start up an ngrok tunnel for the TCP port specified? Helpful if you don't have your own domain and wish to sync with a turtle when playing multiplayer.
 }
 ```
 
