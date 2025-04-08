@@ -62,21 +62,22 @@ local function ensureFile(path, data)
   local dir = split(path, "/")
   local currentDir = dir[1]
   if #dir == 1 then
-    local f = fs.open(currentDir, "w")
+    local f = fs.open(currentDir, "w+")
     f.write(data)
     f.close()
     return
-  elseif not fs.exists(currentDir) then
-    fs.makeDir(currentDir)
   end
   if #dir > 2 then
 	  for i = 2, #currentDir - 1 do
+      if i == #dir then break end
       if not dir[i] then break end
 		  currentDir = currentDir .. "/" .. dir[i]
 		  if not fs.exists(currentDir) then 
 		    fs.makeDir(currentDir)
 		  end
 	  end
+  else
+    if not fs.exists(currentDir) then fs.makeDir(currentDir) end
   end
   currentDir = currentDir .. "/" .. dir[#dir]
   local file = fs.open(currentDir, "w")
@@ -104,17 +105,30 @@ local function walkUpTree(path)
   checkFolder(currentPath)
 end
 
+local function addPortion(data)
+  local f = fs.open(data.filePath, "a")
+  f.write(data.fileData)
+  f.close()
+end
+
+local lastFile = ""
+local currentRequest = 0
+
+local function sendWaiting()
+  ws.send("waiting" .. currentRequest)
+  currentRequest = currentRequest + 1
+end
 
 local function processData(data)
+  print("processing " .. data.type .. " sync request")
   if data.type == "deletion" then
-    for _,v in next, data.files do
-      fs.delete(v)
-      walkUpTree(v)
-    end
-  else
-    for _,v in next, data.files do
-      ensureFile(v.filePath, v.fileData)
-    end
+    fs.delete(data.file)
+    walkUpTree(data.file)
+  elseif lastFile ~= data.filePath then
+    ensureFile(data.filePath, data.fileData)
+    lastFile = data.filePath
+  else 
+    addPortion(data)
   end
 end
 
@@ -130,13 +144,11 @@ end
 initialConnect()
 
 while true do
-  print("waiting for channel change")
+  print("waiting for data")
+  sendWaiting()
   local data, close = receive()
   if close then break end
   if data then
-    for _,v in next, data do
-      processData(v)
-    end
-    print("data received")
+    processData(data)
   end
 end

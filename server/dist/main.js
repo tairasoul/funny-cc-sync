@@ -4,7 +4,7 @@ import path from "path";
 import ngrok from "ngrok";
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(decodeURIComponent(fileURLToPath(import.meta.url)));
-const cfg = path.join(__dirname, "..", "config.json");
+const cfg = path.join(process.cwd(), "config.json");
 const config = JSON.parse(readFileSync(cfg, 'utf8'));
 const server = new SyncServer(config.port, "project.json", path.join(__dirname, "..", "..", "ingame-client"), config.minify);
 server.setup();

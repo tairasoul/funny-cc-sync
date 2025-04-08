@@ -5,7 +5,7 @@ import ngrok from "ngrok";
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(decodeURIComponent(fileURLToPath(import.meta.url)));
 
-const cfg = path.join(__dirname, "..", "config.json");
+const cfg = path.join(process.cwd(), "config.json");
 
 type Config = {
   port: number;
