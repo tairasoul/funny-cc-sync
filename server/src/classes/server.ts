@@ -273,7 +273,7 @@ export class SyncServer {
         realFiles.push(path.join(directory, file));
         const fdata = fs.readFileSync(filepath, 'utf8');
         const processed = this.preprocess(fdata);
-        const chunks = this.splitStringIntoChunks(processed, 25 * 1000);
+        const chunks = this.splitStringIntoChunks(processed, 50 * 1000);
         data.push({
           type: channel.type,
           fileData: chunks[0],
